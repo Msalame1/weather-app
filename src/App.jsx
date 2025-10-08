@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, MapPin, RefreshCw, Thermometer, Eye, Wind, Droplets, AlertCircle, X } from 'lucide-react';
-
-// Reusable Components
+import { Search, MapPin, RefreshCw, Thermometer, Eye, Wind, Droplets, AlertCircle, X, Moon, Sun } from 'lucide-react';
 
 // SearchBar Component
-const SearchBar = ({ searchQuery, setSearchQuery, onSearch, isLoading }) => {
+const SearchBar = ({ searchQuery, setSearchQuery, onSearch, isLoading, isDark }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSearch();
   };
 
   return (
-    <div className="flex justify-center mb-8">
+    <div className="flex justify-center mb-8 w-full">
       <form onSubmit={handleSubmit} className="flex gap-4 w-full max-w-md">
         <div className="relative flex-1">
           <input
@@ -19,15 +17,23 @@ const SearchBar = ({ searchQuery, setSearchQuery, onSearch, isLoading }) => {
             placeholder="Search for a city..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 pl-12 bg-white border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-md text-gray-900 font-medium text-base placeholder-gray-500 placeholder:font-normal"
+            className={`w-full px-4 py-3 pl-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md font-medium text-base placeholder:font-normal ${
+              isDark 
+                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' 
+                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+            }`}
             disabled={isLoading}
           />
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <MapPin className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
         </div>
         <button
           type="submit"
           disabled={isLoading || !searchQuery.trim()}
-          className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className={`px-6 py-3 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ${
+            isDark 
+              ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              : 'bg-black text-white hover:bg-gray-800'
+          }`}
         >
           <Search className="w-4 h-4" />
         </button>
@@ -37,11 +43,15 @@ const SearchBar = ({ searchQuery, setSearchQuery, onSearch, isLoading }) => {
 };
 
 // ErrorMessage Component
-const ErrorMessage = ({ message, onClose }) => {
+const ErrorMessage = ({ message, onClose, isDark }) => {
   if (!message) return null;
 
   return (
-    <div className="max-w-md mx-auto mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center justify-between shadow-sm">
+    <div className={`max-w-md mx-auto mb-6 p-4 border rounded-xl flex items-center justify-between shadow-sm ${
+      isDark 
+        ? 'bg-red-900/20 border-red-800 text-red-400' 
+        : 'bg-red-50 border-red-200 text-red-600'
+    }`}>
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4 flex-shrink-0" />
         <span className="text-sm">{message}</span>
@@ -49,7 +59,7 @@ const ErrorMessage = ({ message, onClose }) => {
       {onClose && (
         <button 
           onClick={onClose}
-          className="text-red-400 hover:text-red-600 transition-colors"
+          className={`transition-colors ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-400 hover:text-red-600'}`}
         >
           <X className="w-4 h-4" />
         </button>
@@ -59,11 +69,10 @@ const ErrorMessage = ({ message, onClose }) => {
 };
 
 // WeatherCard Component
-const WeatherCard = ({ city, weather, onRemove, lastUpdated }) => {
+const WeatherCard = ({ city, weather, onRemove, lastUpdated, isDark }) => {
   if (!weather) return null;
 
   const getWeatherIcon = (condition, iconCode) => {
-    // Use OpenWeatherMap icon codes for better accuracy
     if (iconCode) {
       const iconMap = {
         '01d': '☀️', '01n': '🌙',
@@ -79,7 +88,6 @@ const WeatherCard = ({ city, weather, onRemove, lastUpdated }) => {
       return iconMap[iconCode] || '🌤️';
     }
 
-    // Fallback based on condition text
     const conditionLower = condition.toLowerCase();
     if (conditionLower.includes('clear') || conditionLower.includes('sun')) return '☀️';
     if (conditionLower.includes('cloud')) return '☁️';
@@ -98,26 +106,32 @@ const WeatherCard = ({ city, weather, onRemove, lastUpdated }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 relative group">
+    <div className={`rounded-2xl p-6 shadow-lg border hover:shadow-xl transition-all duration-300 relative group ${
+      isDark 
+        ? 'bg-gray-800 border-gray-700' 
+        : 'bg-white border-gray-100'
+    }`}>
       {onRemove && (
         <button
           onClick={() => onRemove(city.id)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className={`absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+            isDark ? 'text-gray-500 hover:text-red-400' : 'text-gray-400 hover:text-red-500'
+          }`}
         >
           <X className="w-4 h-4" />
         </button>
       )}
       
       <div className="text-center mb-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-1">
+        <h3 className={`text-xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>
           {city.name}
-          {city.country && <span className="text-gray-500 font-normal text-base ml-2">{city.country}</span>}
+          {city.country && <span className={`font-normal text-base ml-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{city.country}</span>}
         </h3>
         <div className="text-6xl mb-2">{getWeatherIcon(weather.condition, weather.iconCode)}</div>
-        <div className="text-4xl font-bold text-gray-800 mb-2">{Math.round(weather.temp)}°C</div>
-        <div className="text-gray-600 text-sm capitalize">{weather.condition}</div>
+        <div className={`text-4xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>{Math.round(weather.temp)}°C</div>
+        <div className={`text-sm capitalize ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{weather.condition}</div>
         {lastUpdated && (
-          <div className="text-xs text-gray-400 mt-2">
+          <div className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             Updated: {formatTime(lastUpdated)}
           </div>
         )}
@@ -127,32 +141,32 @@ const WeatherCard = ({ city, weather, onRemove, lastUpdated }) => {
         <div className="flex items-center gap-2">
           <Thermometer className="w-4 h-4 text-orange-500 flex-shrink-0" />
           <div>
-            <div className="text-xs text-gray-500">Feels like</div>
-            <div className="text-sm font-medium">{Math.round(weather.feelsLike)}°C</div>
+            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Feels like</div>
+            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{Math.round(weather.feelsLike)}°C</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Droplets className="w-4 h-4 text-blue-500 flex-shrink-0" />
           <div>
-            <div className="text-xs text-gray-500">Humidity</div>
-            <div className="text-sm font-medium">{weather.humidity}%</div>
+            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Humidity</div>
+            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{weather.humidity}%</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Wind className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <Wind className={`w-4 h-4 flex-shrink-0 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
           <div>
-            <div className="text-xs text-gray-500">Wind</div>
-            <div className="text-sm font-medium">{weather.windSpeed} km/h</div>
+            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Wind</div>
+            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{weather.windSpeed} km/h</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <Eye className={`w-4 h-4 flex-shrink-0 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
           <div>
-            <div className="text-xs text-gray-500">Visibility</div>
-            <div className="text-sm font-medium">{weather.visibility} km</div>
+            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Visibility</div>
+            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{weather.visibility} km</div>
           </div>
         </div>
       </div>
@@ -162,6 +176,7 @@ const WeatherCard = ({ city, weather, onRemove, lastUpdated }) => {
 
 // Main Weather Dashboard Component
 const WeatherDashboard = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [cities, setCities] = useState([
     { name: 'London', country: 'GB', id: 'london' },
     { name: 'New York', country: 'US', id: 'newyork' },
@@ -174,11 +189,9 @@ const WeatherDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // OpenWeatherMap API configuration with your API key
   const API_KEY = '151a2c1f98d7b6466a77542b9eb33b75';
   const API_BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
-  // Mock data fallback for demo purposes
   const getMockWeatherData = (cityName) => {
     const conditions = [
       { name: 'clear sky', iconCode: '01d', tempRange: [25, 35] },
@@ -203,7 +216,7 @@ const WeatherDashboard = () => {
     const temp = Math.round(baseTemp * 10) / 10;
     const feelsLike = temp + (Math.abs(cityHash % 10) - 5);
     const humidity = 40 + (Math.abs(cityHash % 40));
-    const windSpeed = Math.round((2 + (Math.abs(cityHash % 15))) * 3.6); // Convert m/s to km/h
+    const windSpeed = Math.round((2 + (Math.abs(cityHash % 15))) * 3.6);
     const visibility = Math.round((3 + (Math.abs(cityHash % 12))) * 1000) / 1000;
 
     return {
@@ -217,7 +230,6 @@ const WeatherDashboard = () => {
     };
   };
 
-  // Fetch weather data from API or fallback to mock data
   const fetchWeatherData = useCallback(async (cityName, countryCode = '') => {
     try {
       setIsLoading(true);
@@ -225,7 +237,6 @@ const WeatherDashboard = () => {
       
       let weatherInfo;
       
-      // Fetch from OpenWeatherMap API with your API key
       const query = countryCode ? `${cityName},${countryCode}` : cityName;
       const url = `${API_BASE_URL}?q=${encodeURIComponent(query)}&appid=${API_KEY}&units=metric`;
       
@@ -250,16 +261,15 @@ const WeatherDashboard = () => {
           condition: data.weather[0].description,
           iconCode: data.weather[0].icon,
           humidity: data.main.humidity,
-          windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
+          windSpeed: Math.round(data.wind.speed * 3.6),
           visibility: data.visibility ? Math.round(data.visibility / 1000) : 10
         };
         
       } catch (apiError) {
         console.warn('API fetch failed:', apiError.message);
         if (apiError.message.includes('not found') || apiError.message.includes('API key')) {
-          throw apiError; // Re-throw user-facing errors
+          throw apiError;
         }
-        // For network errors, fall back to mock data
         console.log('Falling back to mock data');
         weatherInfo = getMockWeatherData(cityName);
       }
@@ -286,7 +296,6 @@ const WeatherDashboard = () => {
     }
   }, [API_KEY]);
 
-  // Handle search functionality
   const handleSearch = async () => {
     if (searchQuery.trim()) {
       const cityName = searchQuery.trim();
@@ -315,75 +324,101 @@ const WeatherDashboard = () => {
     }
   };
 
-  // Remove city from dashboard
   const removeCity = (cityId) => {
     setCities(prev => prev.filter(city => city.id !== cityId));
   };
 
-  // Refresh all weather data
   const refreshAll = async () => {
     for (const city of cities) {
       await fetchWeatherData(city.name, city.country);
     }
   };
 
-  // Auto-refresh functionality - refresh every 5 minutes
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
   useEffect(() => {
     const autoRefresh = setInterval(() => {
       cities.forEach(city => {
         fetchWeatherData(city.name, city.country);
       });
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(autoRefresh);
   }, [cities, fetchWeatherData]);
 
-  // Load initial weather data
   useEffect(() => {
     cities.forEach(city => {
       fetchWeatherData(city.name, city.country);
     });
   }, [fetchWeatherData]);
 
-  // Clear error message
   const clearError = () => setError('');
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-6">
+    <div className={`min-h-screen w-full p-4 sm:p-6 transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+    }`}>
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">Weather Dashboard</h1>
-          <p className="text-gray-600 text-base sm:text-lg">Search for current weather conditions in cities around the world</p>
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <h1 className={`text-3xl sm:text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              Weather Dashboard
+            </h1>
+            <button
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-lg transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+              aria-label="Toggle dark mode"
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          </div>
+          <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Search for current weather conditions in cities around the world
+          </p>
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center mb-8 gap-4 w-full">
-          <SearchBar 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onSearch={handleSearch}
-            isLoading={isLoading}
-          />
-          
+        {/* Centered Search Bar */}
+        <SearchBar 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSearch={handleSearch}
+          isLoading={isLoading}
+          isDark={isDarkMode}
+        />
+
+        {/* Refresh Button - Centered below search */}
+        <div className="flex justify-center mb-8">
           <button
             onClick={refreshAll}
             disabled={isLoading}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+            className={`px-6 py-3 rounded-xl transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm ${
+              isDarkMode 
+                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh All</span>
+            <span>Refresh All</span>
           </button>
         </div>
 
         {/* Error Message */}
-        <ErrorMessage message={error} onClose={clearError} />
+        <ErrorMessage message={error} onClose={clearError} isDark={isDarkMode} />
 
         {/* Loading State */}
         {isLoading && cities.length === 0 && (
           <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
-            <p className="text-gray-600">Loading weather data...</p>
+            <RefreshCw className={`w-8 h-8 animate-spin mx-auto mb-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+            <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Loading weather data...</p>
           </div>
         )}
 
@@ -396,6 +431,7 @@ const WeatherDashboard = () => {
               weather={weatherData[city.name]}
               onRemove={cities.length > 1 ? removeCity : null}
               lastUpdated={lastUpdated[city.name]}
+              isDark={isDarkMode}
             />
           ))}
         </div>
@@ -403,15 +439,19 @@ const WeatherDashboard = () => {
         {/* Empty State */}
         {cities.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg mb-2">No cities added yet</p>
-            <p className="text-gray-500">Search for a city to get started</p>
+            <MapPin className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+            <p className={`text-lg mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>No cities added yet</p>
+            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Search for a city to get started</p>
           </div>
         )}
 
         {/* API Status */}
         <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm ${
+            isDarkMode 
+              ? 'bg-green-900/20 border-green-800 text-green-400' 
+              : 'bg-green-50 border-green-200 text-green-700'
+          }`}>
             <span>🌐</span>
             <span>Connected to OpenWeatherMap API for live weather data</span>
           </div>
